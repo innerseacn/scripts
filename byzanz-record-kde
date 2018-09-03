@@ -1,0 +1,50 @@
+#!/bin/bash
+
+# AUTHOR: (c) Rob W 2012, modified by MHC (http://askubuntu.com/users/81372/mhc), modified by InnerSea (for KDE)
+# NAME: GIFRecord 0.1
+# DESCRIPTION: A script to record GIF screencasts.
+# LICENSE: GNU GPL v3 (http://www.gnu.org/licenses/gpl.html)
+# DEPENDENCIES: byzanz,kdialog
+
+# Time and date
+TIME=$(date +"%Y-%m-%d_%H%M%S")
+
+# Delay before starting
+DELAY=5
+
+# Standard screencast folder
+FOLDER="$HOME/图片"
+
+# Default recording duration
+DEFDUR=10
+
+# Custom recording duration as set by user
+USERDUR=$(kdialog --title "Duration?" --inputbox "Please enter the screencast duration in seconds" 2>&1)
+
+# Duration and output file
+if [ $USERDUR -gt 0 ]; then
+    D=$USERDUR
+else
+    D=$DEFDUR
+fi
+
+# Window geometry
+XWININFO=$(xwininfo)
+
+read X < <(awk -F: '/Absolute upper-left X/{print $2}' <<< "$XWININFO")
+read Y < <(awk -F: '/Absolute upper-left Y/{print $2}' <<< "$XWININFO")
+read W < <(awk -F: '/Width/{print $2}' <<< "$XWININFO")
+read H < <(awk -F: '/Height/{print $2}' <<< "$XWININFO")
+
+# Notify the user of recording delay
+kdialog --title "GIFrecord" --passivepopup "Recording will start in 5 seconds."
+sleep 5
+
+# Notify the user of recording time
+kdialog --title "GIFrecord" --passivepopup "Recording starts for $D seconds."
+
+#Actual recording
+byzanz-record -c --verbose --delay=0 --duration=$D --x=$X --y=$Y --width=$W --height=$H "$FOLDER/GIFrecord_$TIME.gif"
+
+# Notify the user of end of recording.
+kdialog --title "GIFrecord" --passivepopup "Screencast saved to $FOLDER/GIFrecord_$TIME.gif"
